@@ -3908,7 +3908,15 @@ class HermesCLI(CLIAgentSetupMixin, CLICommandsMixin, CLIBillingMixin):
         )
 
         self._explicit_api_key = api_key
-        self._explicit_base_url = base_url
+        # Treat model.base_url from config.yaml as an explicit runtime override,
+        # not only a display/client-construction value. This is required for
+        # OAuth-backed providers such as openai-codex: the resolver must receive
+        # the custom endpoint while still obtaining the bearer token from the
+        # local Codex auth store.
+        self._explicit_base_url = (
+            base_url
+            or (_model_config.get("base_url", "") if isinstance(_model_config, dict) else "")
+        )
 
         # Provider selection is resolved lazily at use-time via _ensure_runtime_credentials().
         self.requested_provider = (

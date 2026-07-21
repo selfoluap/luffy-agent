@@ -417,6 +417,16 @@ def _resolve_runtime_from_pool_entry(
     api_mode = "chat_completions"
     if provider == "openai-codex":
         api_mode = "codex_responses"
+        cfg_provider = str(model_cfg.get("provider") or "").strip().lower()
+        cfg_base_url = ""
+        if cfg_provider == "openai-codex":
+            cfg_base_url = str(model_cfg.get("base_url") or "").strip().rstrip("/")
+        # Preserve the Codex OAuth credential pool, but allow config.yaml to
+        # redirect Codex traffic through a native Codex proxy such as Aperture
+        # (/codex). Pool entries normally carry the default ChatGPT Codex URL;
+        # without this override, live /model switches silently leave the proxy.
+        if cfg_base_url and (not base_url or base_url.rstrip("/") == DEFAULT_CODEX_BASE_URL.rstrip("/")):
+            base_url = cfg_base_url
         base_url = base_url or DEFAULT_CODEX_BASE_URL
     elif provider == "xai-oauth":
         api_mode = "codex_responses"

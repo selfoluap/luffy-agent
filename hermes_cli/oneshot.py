@@ -348,7 +348,11 @@ def _run_agent(
     # the user's configured default provider, which may not host the model
     # the caller just asked for.
     effective_provider = (provider or "").strip() or None
-    explicit_base_url_from_alias: Optional[str] = None
+    explicit_base_url_from_alias: Optional[str] = (
+        str(model_cfg.get("base_url") or "").strip()
+        if isinstance(model_cfg, dict)
+        else None
+    )
     if effective_provider is None and (model or env_model):
         # Only auto-detect when the model was explicitly requested via arg or
         # env var (not when it came from config — that's the "use my defaults"
